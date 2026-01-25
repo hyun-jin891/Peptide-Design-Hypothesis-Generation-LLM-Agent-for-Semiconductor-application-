@@ -17,7 +17,6 @@ def sequence_analysis(seq):
   arom = pa.aromaticity()
   instab = pa.instability_index()
   gravy = pa.gravy()
-  ext_red, ext_ox = pa.molar_extinction_coefficient()
   
   return {"Sequence":seq, "molecular weight":molecular_weight, "amino acid composition":fractions, "pI":pI, "aromaticity":arom, "instability":instab, "GRAVY":gravy}
   
@@ -152,19 +151,20 @@ def compute_global_properties_from_pdb(
     if len(ca_atoms) >= 2:
         ns = NeighborSearch(ca_atoms)
 
-        seen = set()
+        atom2meta = {}
+        for i, (a, key) in enumerate(zip(ca_atoms, ca_keys)):
+            atom2meta[id(a)] = (key[0], i)
 
-        for idx_a, a in enumerate(ca_atoms):
-            key_a = ca_keys[idx_a]
+        seen = set()
+        for a in ca_atoms:
+            chain_a, idx_a = atom2meta[id(a)]
             for b in ns.search(a.coord, ca_contact_cutoff_A, level="A"):
                 if a is b:
                     continue
-                idx_b = ca_atoms.index(b)
-                key_b = ca_keys[idx_b]
+                chain_b, idx_b = atom2meta[id(b)]
 
-                if key_a[0] == key_b[0]:
-                    if abs(key_a[1] - key_b[1]) <= seq_sep_exclude:
-                        continue
+                if chain_a == chain_b and abs(idx_a - idx_b) <= seq_sep_exclude:
+                    continue
 
                 pair = tuple(sorted((id(a), id(b))))
                 seen.add(pair)

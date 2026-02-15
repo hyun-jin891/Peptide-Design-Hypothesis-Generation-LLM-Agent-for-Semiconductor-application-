@@ -1,4 +1,4 @@
-# Peptide-Design-Hypothesis-Generation-LLM-Agent-for-Semiconductor-application
+# PSHGagent: Protein & Semiconductor Hypothesis Generation Agent
 
 # chemical_retriever.py
 * ChemicalRetriever 클래스 사용
@@ -60,9 +60,43 @@
             "n_points": n_points,   # 원자 표면에 뿌리는 용매 분자의 개수를 가정
         },
     }
+```
+
+# propka_context_generation.py
+* run_propka: pdb 구조파일 path를 입력 받으면 ProPKa software 실행 -> pdb 파일과 같은 이름의 .pka 파일이 생성
+* get_propka_context: .pka 파일로부터 LLM이 쓸만한 context를 자연어 형태로 추출
+
+```
+The context below represents the electrical property of generated peptide sequence measured by ProPKa tools
+
+  pI_folded: pI value of folded peptide
+  pI_unfoled: pI value of unfolded peptide
+  Q_foled_pH7.4: charge of folded peptide at pH7.4
+  Q_unfoled_pH7.4: charge of unfolded peptide at pH7.4
+  sensitive_pKa: Residue that can induce charge change for various reason like ligand binding
+
+  [ProPKa Context]
+  {"propka_res": {"pI_folded": 4.5, "pI_unfoled": 4.37, "Q_folded_pH7.4": -2.93, "Q_unfolded_pH7.4": -3.09, "sensitive_pKa": [{"res": "HIS", "id": 10, "chain": "A", "pKa": 7.1}, {"res": "N+", "id": 1, "chain": "A", "pKa": 7.83}]}}
 
 
+```
+
+# binding_context_retriever.py
+* get_target_mapping: target_name - target_id쌍 데이터 전체 로드
+* get_target_id: target_name을 input으로 넣으면 target_id 반환
+* get_binding_context: target_name과 target_id, 생성한 아미노산 서열을 입력으로 받아 해당 target과 붙는다고 알려진 sequence와의 cosine 유사도 분석 결과를 자연어로 반환
 
 
+```
+The context below explains whether the generated amino acid sequence is similar to other sequences that can bind to the target.
+  
+[Target]
+biotin
+  
+[Similarity context]
+{"CSWRPPFRAVC": 0.7058924436569214, "CSWAPPFKASC": 0.6882226467132568, "CNWTPPFKTRC": 0.7015720009803772}
+
+
+```
 
 
